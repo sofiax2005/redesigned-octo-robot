@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NormalDB - Database Normalization Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>NormalDB</h1>
+                    <span class="tagline">Database Normalization Made Simple</span>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn active" data-section="home">Home</button>
+                    <button class="nav-btn" data-section="checker">Normalization Checker</button>
+                    <button class="nav-btn" data-section="designer">Table Designer</button>
+                    <button class="nav-btn" data-section="erd">ERD Generator</button>
+                    <button class="nav-btn" data-section="optimizer">Query Optimizer</button>
+                    <button class="nav-btn" data-section="education">Learn</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Landing Section with R2D3 Style -->
+        <section id="home" class="section active">
+            <!-- Hero with Animated Introduction -->
+            <div class="hero-intro">
+                <div class="container">
+                    <div class="intro-content">
+                        <h1 class="intro-title">What is Database Normalization?</h1>
+                        <p class="intro-subtitle">A visual journey through the principles that make databases efficient, consistent, and reliable.</p>
+                        <div class="scroll-indicator">
+                            <span>Scroll to explore</span>
+                            <div class="scroll-arrow">↓</div>
+                        </div>
+                    </div>
+                    <div class="intro-visualization" id="introViz">
+                        <!-- Animated data table will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story Section 1: The Problem -->
+            <section class="story-section" data-section="problem">
+                <div class="container">
+                    <div class="story-content">
+                        <div class="story-text">
+                            <h2>First, some medical intuition...</h2>
+                            <p>Imagine you're managing a hospital database with thousands of patient records. Every patient visit creates data about the patient, doctor, diagnosis, and medications. Storing everything in one giant table creates dangerous redundancy that could cost lives.</p>
+                        </div>
+                        <div class="story-visualization" id="messyTable">
+                            <!-- Messy table visualization -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Story Section 2: First Normal Form -->
+            <section class="story-section" data-section="1nf">
+                <div class="container">
+                    <div class="story-content">
+                        <div class="story-text">
+                            <h2>Adding clinical nuance</h2>
+                            <p>Medical data has natural relationships. A patient's demographics don't change between visits, but their treatments do. A doctor's license number stays constant, but their patient assignments vary.</p>
+                            <div class="normalization-rules">
+                                <div class="rule-item">patient_id → patient_demographics</div>
+                                <div class="rule-item">doctor_license → doctor_info</div>
+                                <div class="rule-item">visit_id → treatment_details</div>
+                            </div>
+                        </div>
+                        <div class="story-visualization" id="table1NF">
+                            <!-- 1NF transformation visualization -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Story Section 3: Second Normal Form -->
+            <section class="story-section" data-section="2nf">
+                <div class="container">
+                    <div class="story-content">
+                        <div class="story-text">
+                            <h2>Drawing medical boundaries</h2>
+                            <p>Proper medical database design separates stable data (patient demographics) from variable data (visit records) and prevents dangerous errors like wrong medication dosages.</p>
+                            <div class="dependency-explanation">
+                                <div class="dependency-item">
+                                    <span class="dep-from">patient_id + visit_date</span>
+                                    <span class="dep-arrow">→</span>
+                                    <span class="dep-to">diagnosis</span>
+                                    <span class="dep-status valid">✓ Safe</span>
+                                </div>
+                                <div class="dependency-item">
+                                    <span class="dep-from">doctor_id</span>
+                                    <span class="dep-arrow">→</span>
+                                    <span class="dep-to">hospital_name</span>
+                                    <span class="dep-status invalid">⚠️ Medication errors possible</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="story-visualization" id="table2NF">
+                            <!-- 2NF transformation visualization -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Dataset Section -->
+            <section class="story-section" data-section="interactive">
+                <div class="container">
+                    <div class="interactive-header">
+                        <h2>Try it yourself</h2>
+                        <p>Upload your own dataset and watch the normalization process unfold</p>
+                    </div>
+                    <div class="dataset-upload" id="datasetUpload">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">📊</div>
+                            <h3>Drop your CSV file here</h3>
+                            <p>or click to browse</p>
+                            <input type="file" id="csvFileInput" accept=".csv" hidden>
+                            <button class="btn btn--outline" id="browseBtn">Browse Files</button>
+                        </div>
+                        <div class="sample-datasets">
+                            <h4>Or try a sample dataset:</h4>
+                            <div class="sample-buttons">
+                                <button class="btn btn--secondary btn--sm" data-sample="student">Student Enrollment</button>
+                                <button class="btn btn--secondary btn--sm" data-sample="library">Library System</button>
+                                <button class="btn btn--secondary btn--sm" data-sample="employee">Employee Projects</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Preview Section -->
+            <section class="story-section" data-section="preview" id="previewSection" style="display: none;">
+                <div class="container">
+                    <h2>Your Data</h2>
+                    <div class="data-preview" id="dataPreview">
+                        <!-- Data table will be rendered here -->
+                    </div>
+                    <div class="analysis-controls">
+                        <button class="btn btn--primary" id="startNormalization">Start Normalization Process</button>
+                        <button class="btn btn--outline" id="editDependencies">Define Dependencies</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Normalization Process Visualization -->
+            <section class="story-section" data-section="process" id="processSection" style="display: none;">
+                <div class="container">
+                    <h2>Normalization in Action</h2>
+                    <div class="process-visualization">
+                        <div class="process-steps">
+                            <div class="step-indicator">
+                                <div class="step-dot active" data-step="current">Current</div>
+                                <div class="step-line"></div>
+                                <div class="step-dot" data-step="1nf">1NF</div>
+                                <div class="step-line"></div>
+                                <div class="step-dot" data-step="2nf">2NF</div>
+                                <div class="step-line"></div>
+                                <div class="step-dot" data-step="3nf">3NF</div>
+                                <div class="step-line"></div>
+                                <div class="step-dot" data-step="bcnf">BCNF</div>
+                            </div>
+                        </div>
+                        <div class="process-content" id="processContent">
+                            <!-- Dynamic normalization steps will be rendered here -->
+                        </div>
+                        <div class="process-controls">
+                            <button class="btn btn--outline" id="prevStep">Previous</button>
+                            <button class="btn btn--primary" id="nextStep">Next Step</button>
+                            <button class="btn btn--secondary" id="autoPlay">Auto Play</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Query Section -->
+            <section class="story-section" data-section="query" id="querySection" style="display: none;">
+                <div class="container">
+                    <div class="interactive-header">
+                        <h2>Query Your Data</h2>
+                        <p>Test your normalized database with AI queries or direct SQL</p>
+                    </div>
+                    
+                    <div class="query-interface" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-24); margin-bottom: var(--space-32);">
+                        <div class="ai-query-panel">
+                            <h3>🤖 AI Medical Query</h3>
+                            <p>Ask in natural medical language</p>
+                            <textarea id="ai-input" placeholder="e.g., Find all patients with hypertension treated by Dr. Wilson" rows="4" style="width: 100%; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: var(--font-family-base); margin-bottom: var(--space-12);"></textarea>
+                            <button class="btn btn--primary" onclick="queryAI()">Ask AI</button>
+                            <button class="btn btn--outline btn--sm" onclick="loadSampleAIQuery()" style="margin-left: var(--space-8);">Sample</button>
+                        </div>
+                        
+                        <div class="sql-query-panel">
+                            <h3>💻 Medical SQL Editor</h3>
+                            <p>Query medical database directly</p>
+                            <textarea id="sql-input" placeholder="SELECT * FROM patient_records WHERE diagnosis LIKE '%hypertension%' LIMIT 10;" rows="4" style="width: 100%; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: var(--font-family-mono); font-size: var(--font-size-sm); margin-bottom: var(--space-12);"></textarea>
+                            <button class="btn btn--primary" onclick="querySQL()">Run SQL</button>
+                            <button class="btn btn--outline btn--sm" onclick="loadSampleSQL()" style="margin-left: var(--space-8);">Sample</button>
+                        </div>
+                    </div>
+                    
+                    <div class="query-results-container">
+                        <div id="results" class="results-display"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="story-section" data-section="results" id="resultsSection" style="display: none;">
+                <div class="container">
+                    <h2>Normalized Schema</h2>
+                    <div class="results-visualization">
+                        <div class="schema-comparison">
+                            <div class="before-after">
+                                <div class="comparison-side">
+                                    <h3>Before Normalization</h3>
+                                    <div class="table-preview" id="beforeTable">
+                                        <!-- Original table -->
+                                    </div>
+                                </div>
+                                <div class="comparison-arrow">→</div>
+                                <div class="comparison-side">
+                                    <h3>After Normalization</h3>
+                                    <div class="normalized-tables" id="normalizedTables">
+                                        <!-- Normalized tables -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="benefits-summary">
+                            <h3>Benefits Achieved</h3>
+                            <div class="benefits-list">
+                                <div class="benefit-item">
+                                    <span class="benefit-icon">🔄</span>
+                                    <div class="benefit-text">
+                                        <h4>Eliminated Redundancy</h4>
+                                        <p>Data is stored once and referenced elsewhere</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-item">
+                                    <span class="benefit-icon">🛡️</span>
+                                    <div class="benefit-text">
+                                        <h4>Improved Data Integrity</h4>
+                                        <p>Constraints ensure data consistency</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-item">
+                                    <span class="benefit-icon">⚡</span>
+                                    <div class="benefit-text">
+                                        <h4>Better Performance</h4>
+                                        <p>Optimized for both storage and queries</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="export-options">
+                            <button class="btn btn--primary" id="exportSQL">Export SQL Schema</button>
+                            <button class="btn btn--secondary" id="exportERD">Generate ERD</button>
+                            <button class="btn btn--secondary" id="queryData">Query This Data</button>
+                            <button class="btn btn--outline" id="startOver">Try Another Dataset</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Educational Quiz Section -->
+            <section class="story-section" data-section="quiz">
+                <div class="container">
+                    <div class="quiz-header">
+                        <h2>Test Your Knowledge</h2>
+                        <p>Can you identify normalization violations?</p>
+                    </div>
+                    <div class="quiz-content" id="quizContent">
+                        <!-- Interactive quiz will be generated here -->
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Normalization Checker Section -->
+        <section id="checker" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Normalization Checker</h2>
+                    <p>Enter your table structure and functional dependencies to analyze normalization level and get improvement suggestions.</p>
+                </div>
+
+                <div class="checker-content">
+                    <div class="input-panel">
+                        <div class="input-group">
+                            <label class="form-label">Table Name</label>
+                            <input type="text" id="tableName" class="form-control" placeholder="e.g., StudentEnrollment" value="StudentEnrollment">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="form-label">Attributes (comma-separated)</label>
+                            <textarea id="attributes" class="form-control" rows="3" placeholder="e.g., StudentID, StudentName, CourseID, CourseName, InstructorName, Grade">StudentID, StudentName, CourseID, CourseName, InstructorName, Grade</textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="form-label">Functional Dependencies (one per line)</label>
+                            <textarea id="dependencies" class="form-control" rows="5" placeholder="e.g., StudentID -&gt; StudentName&#10;CourseID -&gt; CourseName, InstructorName&#10;StudentID, CourseID -&gt; Grade">StudentID -&gt; StudentName
+CourseID -&gt; CourseName, InstructorName
+StudentID, CourseID -&gt; Grade</textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="form-label">Primary Key</label>
+                            <input type="text" id="primaryKey" class="form-control" placeholder="e.g., StudentID, CourseID" value="StudentID, CourseID">
+                        </div>
+
+                        <div class="actions">
+                            <button class="btn btn--primary" id="analyzeBtn">Analyze Normalization</button>
+                            <button class="btn btn--secondary" id="loadExampleBtn">Load Example</button>
+                            <button class="btn btn--outline" id="clearBtn">Clear All</button>
+                        </div>
+                    </div>
+
+                    <div class="results-panel" id="resultsPanel">
+                        <div class="results-placeholder">
+                            <div class="placeholder-icon">📋</div>
+                            <h3>Ready to Analyze</h3>
+                            <p>Enter your table structure and click "Analyze Normalization" to get detailed insights about your database design.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table Designer Section -->
+        <section id="designer" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Interactive Table Designer</h2>
+                    <p>Design your database tables visually and get real-time normalization feedback.</p>
+                </div>
+
+                <div class="designer-content">
+                    <div class="designer-toolbar">
+                        <button class="btn btn--primary" id="addTableBtn">Add Table</button>
+                        <button class="btn btn--secondary" id="addRelationBtn">Add Relationship</button>
+                        <button class="btn btn--outline" id="exportSchemaBtn">Export Schema</button>
+                    </div>
+
+                    <div class="designer-canvas" id="designerCanvas">
+                        <div class="canvas-placeholder">
+                            <div class="placeholder-icon">🎨</div>
+                            <h3>Start Designing</h3>
+                            <p>Click "Add Table" to begin creating your database schema.</p>
+                        </div>
+                    </div>
+
+                    <div class="designer-sidebar">
+                        <h3>Design Properties</h3>
+                        <div id="designerProperties">
+                            <p class="text-secondary">Select a table or relationship to view properties.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ERD Generator Section -->
+        <section id="erd" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>ERD Generator</h2>
+                    <p>Generate Entity-Relationship Diagrams from your normalized database schemas.</p>
+                </div>
+
+                <div class="erd-content">
+                    <div class="erd-controls">
+                        <div class="input-group">
+                            <label class="form-label">Import Schema (JSON)</label>
+                            <textarea id="erdSchema" class="form-control" rows="4" placeholder="Paste your schema JSON here or use the designer..."></textarea>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn--primary" id="generateErdBtn">Generate ERD</button>
+                            <button class="btn btn--secondary" id="useDesignerSchemaBtn">Use Designer Schema</button>
+                            <button class="btn btn--outline" id="exportErdBtn">Export Image</button>
+                        </div>
+                    </div>
+
+                    <div class="erd-canvas" id="erdCanvas">
+                        <div class="canvas-placeholder">
+                            <div class="placeholder-icon">📊</div>
+                            <h3>ERD Preview</h3>
+                            <p>Import a schema or use the designer to generate your Entity-Relationship Diagram.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Query Optimizer Section -->
+        <section id="optimizer" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Query Optimizer</h2>
+                    <p>Analyze SQL queries and get optimization suggestions based on normalization principles.</p>
+                </div>
+
+                <div class="optimizer-content">
+                    <div class="query-input">
+                        <label class="form-label">SQL Query</label>
+                        <textarea id="sqlQuery" class="form-control" rows="8" placeholder="Enter your SQL query here...">SELECT s.StudentName, c.CourseName, e.Grade
+FROM Students s
+JOIN Enrollments e ON s.StudentID = e.StudentID
+JOIN Courses c ON e.CourseID = c.CourseID
+WHERE e.Grade &gt; 85;</textarea>
+                        <div class="actions">
+                            <button class="btn btn--primary" id="optimizeQueryBtn">Analyze &amp; Optimize</button>
+                            <button class="btn btn--secondary" id="loadSampleQueryBtn">Load Sample Query</button>
+                        </div>
+                    </div>
+
+                    <div class="optimization-results" id="optimizationResults">
+                        <div class="results-placeholder">
+                            <div class="placeholder-icon">⚡</div>
+                            <h3>Query Analysis</h3>
+                            <p>Enter your SQL query above to get detailed analysis and optimization recommendations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section id="education" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Learn Database Normalization</h2>
+                    <p>Master normalization concepts with interactive tutorials and real-world examples.</p>
+                </div>
+
+                <div class="education-content">
+                    <div class="learning-path">
+                        <div class="path-step" data-nf="1nf">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>First Normal Form (1NF)</h3>
+                                <p>Eliminate repeating groups and ensure atomic values</p>
+                                <div class="step-status">Start Here</div>
+                            </div>
+                        </div>
+                        <div class="path-connector"></div>
+                        <div class="path-step" data-nf="2nf">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Second Normal Form (2NF)</h3>
+                                <p>Remove partial dependencies on composite keys</p>
+                                <div class="step-status">Locked</div>
+                            </div>
+                        </div>
+                        <div class="path-connector"></div>
+                        <div class="path-step" data-nf="3nf">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Third Normal Form (3NF)</h3>
+                                <p>Eliminate transitive dependencies</p>
+                                <div class="step-status">Locked</div>
+                            </div>
+                        </div>
+                        <div class="path-connector"></div>
+                        <div class="path-step" data-nf="bcnf">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>Boyce-Codd Normal Form (BCNF)</h3>
+                                <p>Ensure every determinant is a candidate key</p>
+                                <div class="step-status">Locked</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lesson-content" id="lessonContent">
+                        <div class="lesson-placeholder">
+                            <div class="placeholder-icon">📚</div>
+                            <h3>Choose a Normal Form</h3>
+                            <p>Click on any step above to start learning about that normal form with interactive examples.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="examples-section">
+                    <h3>Practice Examples</h3>
+                    <div class="examples-grid">
+                        <div class="example-card" data-example="student">
+                            <h4>Student Enrollment System</h4>
+                            <p>Learn normalization with a classic academic scenario involving students, courses, and grades.</p>
+                            <button class="btn btn--outline btn--sm">Practice Now</button>
+                        </div>
+                        <div class="example-card" data-example="library">
+                            <h4>Library Management</h4>
+                            <p>Normalize a library system with books, members, publishers, and borrowing records.</p>
+                            <button class="btn btn--outline btn--sm">Practice Now</button>
+                        </div>
+                        <div class="example-card" data-example="employee">
+                            <h4>Employee Project Tracking</h4>
+                            <p>Design a normalized schema for employees, departments, projects, and time tracking.</p>
+                            <button class="btn btn--outline btn--sm">Practice Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>NormalDB</h4>
+                    <p>Professional database normalization tools for students and developers.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Tools</h4>
+                    <ul>
+                        <li><a href="#" data-section="checker">Normalization Checker</a></li>
+                        <li><a href="#" data-section="designer">Table Designer</a></li>
+                        <li><a href="#" data-section="erd">ERD Generator</a></li>
+                        <li><a href="#" data-section="optimizer">Query Optimizer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#" data-section="education">Learn Normalization</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Best Practices</a></li>
+                        <li><a href="#">Examples</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 NormalDB. Built for database professionals and students.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Essential Libraries -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
