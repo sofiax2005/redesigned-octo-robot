@@ -132,6 +132,7 @@
                                 <button class="btn btn--secondary btn--sm" data-sample="student">Student Enrollment</button>
                                 <button class="btn btn--secondary btn--sm" data-sample="library">Library System</button>
                                 <button class="btn btn--secondary btn--sm" data-sample="employee">Employee Projects</button>
+                                <button class="btn btn--secondary btn--sm" data-sample="medical">Hospital Records</button> <!-- Added medical sample -->
                             </div>
                         </div>
                     </div>
@@ -173,10 +174,15 @@
                         <div class="process-content" id="processContent">
                             <!-- Dynamic normalization steps will be rendered here -->
                         </div>
+                        <div class="learner-confidence">
+                            <h4>Learner Confidence: <span id="confidenceBar">50%</span></h4>
+                            <div class="confidence-progress"></div>
+                        </div>
                         <div class="process-controls">
                             <button class="btn btn--outline" id="prevStep">Previous</button>
                             <button class="btn btn--primary" id="nextStep">Next Step</button>
                             <button class="btn btn--secondary" id="autoPlay">Auto Play</button>
+                            <button class="btn btn--outline" id="correctStep">Correct This</button> <!-- For learning interactions -->
                         </div>
                     </div>
                 </div>
@@ -195,16 +201,16 @@
                             <h3>🤖 AI Medical Query</h3>
                             <p>Ask in natural medical language</p>
                             <textarea id="ai-input" placeholder="e.g., Find all patients with hypertension treated by Dr. Wilson" rows="4" style="width: 100%; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: var(--font-family-base); margin-bottom: var(--space-12);"></textarea>
-                            <button class="btn btn--primary" onclick="queryAI()">Ask AI</button>
-                            <button class="btn btn--outline btn--sm" onclick="loadSampleAIQuery()" style="margin-left: var(--space-8);">Sample</button>
+                            <button class="btn btn--primary" id="aiQueryBtn">Ask AI</button> <!-- Changed to ID for JS hookup -->
+                            <button class="btn btn--outline btn--sm" id="loadSampleAI">Sample</button>
                         </div>
                         
                         <div class="sql-query-panel">
                             <h3>💻 Medical SQL Editor</h3>
                             <p>Query medical database directly</p>
                             <textarea id="sql-input" placeholder="SELECT * FROM patient_records WHERE diagnosis LIKE '%hypertension%' LIMIT 10;" rows="4" style="width: 100%; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: var(--font-family-mono); font-size: var(--font-size-sm); margin-bottom: var(--space-12);"></textarea>
-                            <button class="btn btn--primary" onclick="querySQL()">Run SQL</button>
-                            <button class="btn btn--outline btn--sm" onclick="loadSampleSQL()" style="margin-left: var(--space-8);">Sample</button>
+                            <button class="btn btn--primary" id="sqlQueryBtn">Run SQL</button> <!-- Changed to ID -->
+                            <button class="btn btn--outline btn--sm" id="loadSampleSQL">Sample</button>
                         </div>
                     </div>
                     
@@ -308,9 +314,9 @@
 
                         <div class="input-group">
                             <label class="form-label">Functional Dependencies (one per line)</label>
-                            <textarea id="dependencies" class="form-control" rows="5" placeholder="e.g., StudentID -&gt; StudentName&#10;CourseID -&gt; CourseName, InstructorName&#10;StudentID, CourseID -&gt; Grade">StudentID -&gt; StudentName
-CourseID -&gt; CourseName, InstructorName
-StudentID, CourseID -&gt; Grade</textarea>
+                            <textarea id="dependencies" class="form-control" rows="5" placeholder="e.g., StudentID -&gt; StudentName&#10;CourseID -&gt; CourseName, InstructorName&#10;StudentID, CourseID -&gt; Grade">StudentID -> StudentName
+CourseID -> CourseName, InstructorName
+StudentID, CourseID -> Grade</textarea>
                         </div>
 
                         <div class="input-group">
@@ -496,17 +502,22 @@ WHERE e.Grade &gt; 85;</textarea>
                         <div class="example-card" data-example="student">
                             <h4>Student Enrollment System</h4>
                             <p>Learn normalization with a classic academic scenario involving students, courses, and grades.</p>
-                            <button class="btn btn--outline btn--sm">Practice Now</button>
+                            <button class="btn btn--outline btn--sm" data-action="practice">Practice Now</button>
                         </div>
                         <div class="example-card" data-example="library">
                             <h4>Library Management</h4>
                             <p>Normalize a library system with books, members, publishers, and borrowing records.</p>
-                            <button class="btn btn--outline btn--sm">Practice Now</button>
+                            <button class="btn btn--outline btn--sm" data-action="practice">Practice Now</button>
                         </div>
                         <div class="example-card" data-example="employee">
                             <h4>Employee Project Tracking</h4>
                             <p>Design a normalized schema for employees, departments, projects, and time tracking.</p>
-                            <button class="btn btn--outline btn--sm">Practice Now</button>
+                            <button class="btn btn--outline btn--sm" data-action="practice">Practice Now</button>
+                        </div>
+                        <div class="example-card" data-example="medical"> <!-- Added -->
+                            <h4>Hospital Patient System</h4>
+                            <p>Normalize medical records to prevent errors in patient care.</p>
+                            <button class="btn btn--outline btn--sm" data-action="practice">Practice Now</button>
                         </div>
                     </div>
                 </div>
