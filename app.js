@@ -35,7 +35,192 @@ function visualizeLearnerGrowth() {
         .attr('fill', d => d3.interpolateReds(Math.max(0, d.confidence)))
         .transition().duration(500).attr('r', d => 3 + (d.confidence * 5)); // Glow on learn
 }
+// Enhanced D3 Learning Graph for Self-Teaching Schema
+// Insert this function into app.js after the existing visualizeLearnerGrowth
+// Call it in updateLearnerConfidence: visualizeLearningGraph(deps, corrections);
 
+// Data structure example (passed from appState.dependencies and learnerState.corrections)
+// deps: [{ left: ['StudentID'], right: ['StudentName'] }, ...]
+// corrections: { 'StudentID->StudentName': { correct: 3, total: 5, confidence: 0.6 } }
+
+function visualizeLearningGraph(dependencies = [], corrections = learnerState.corrections) {
+    const container = document.getElementById('processContent') || document.querySelector('.learner-confidence');
+    if (!container) return;
+
+    // Clear previous viz
+    d3.select(container).select('.learning-graph').remove();
+
+    // Prepare nodes and links
+    const allAttrs = [...new Set(dependencies.flatMap(d => [...d.left, ...d.right]))];
+    const nodes = allAttrs.map(attr => ({ id: attr, group: attr.includes('ID') ? 'key' : 'attr' }));
+
+    const links = dependencies.map((dep, i) => {
+        const key = `${dep.left.join(',')}->${dep.right.join(',')}`;
+        const corr = corrections[key] || { confidence: 0.3 }; // Default low confidence
+        const weight = corr.confidence || 0.3;
+        return {
+            source: dep.left[0], // Simplify to first left attr
+            target: dep.right[0], // Simplify to first right attr
+            weight: weight * 5, // Scale for force
+            confidence: weight,
+            id: i
+        };
+    });
+
+    // Dimensions
+    const width = 600;
+    const height = 400;
+
+    // Create SVG
+    const svg = d3.select(container)
+        .append('div').attr('class', 'learning-graph')
+        .style('width', `${width}px`).style('height', `${height}px`).style('margin', '16px 0')
+        .append('svg')
+        .attr('width', width).attr('height', height)
+        .style('background', 'var(--color-surface)')
+        .style('border-radius', 'var(--radius-base)')
+        .style('border', '1px solid var(--color-border)');
+
+    const g = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`);
+
+    // Force simulation
+    const simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id).distance(80).strength(d => d.weight))
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('center', d3.forceCenter(0, 0))
+        .force('collision', d3.forceCollide().radius(20));
+
+    // Links
+    const link = g.append('g')
+        .attr('stroke', '#999')
+        .attr('stroke-opacity', 0.6)
+        .selectAll('line')
+        .data(links)
+        .join('line')
+        .attr('stroke-width', d => Math.max(1, d.confidence * 4))
+        .attr('stroke', d => d3.interpolateReds(d.confidence)) // Red-hot for high confidence
+        .transition().duration(1000) // Animate on update
+        .attr('stroke-dasharray', d => d.confidence < 0.5 ? '5,5' : 'none'); // Dashed for low conf
+
+    // Link labels (confidence %)
+    const linkLabel = g.append('g')
+        .selectAll('text')
+        .data(links)
+        .join('text')
+        .attr('font-size', 10)
+        .attr('fill', '#666')
+        .text(d => `${Math.round(d.confidence * 100)}%`)
+        .style('pointer-events', 'none');
+
+    // Nodes
+    const node = g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g')
+        .data(nodes)
+        .join('g')
+        .call(d3.drag()
+            .on('start', dragstarted)
+            .on('drag', dragged)
+            .on('end', dragended));
+
+    const circles = node.append('circle')
+        .attr('r', d => d.group === 'key' ? 8 : 6)
+        .attr('fill', d => d.group === 'key' ? 'var(--color-primary)' : 'var(--color-secondary)')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+        .on('mouseover', (event, d) => showTooltip(event, d, 'Attribute'))
+        .on('mouseout', hideTooltip);
+
+    const nodeLabels = node.append('text')
+        .attr('dy', 3)
+        .attr('dx', 12)
+        .attr('font-size', 10)
+        .text(d => d.id)
+        .style('pointer-events', 'none');
+
+    // Tooltip (simple div)
+    const tooltip = d3.select(container).append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0)
+        .style('position', 'absolute')
+        .style('background', 'var(--color-charcoal-800)')
+        .style('color', 'var(--color-white)')
+        .style('padding', '4px 8px')
+        .style('border-radius', 'var(--radius-sm)')
+        .style('font-size', 'var(--font-size-xs)');
+
+    function showTooltip(event, d, type) {
+        tooltip.transition().duration(200).style('opacity', .9);
+        tooltip.html(`${type}: ${d.id}`)
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 28) + 'px');
+    }
+
+    function hideTooltip() {
+        tooltip.transition().duration(500).style('opacity', 0);
+    }
+
+    // Tick function for simulation
+    simulation.on('tick', () => {
+        link
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+
+        // Position labels mid-link
+        linkLabel
+            .attr('x', d => (d.source.x + d.target.x) / 2)
+            .attr('y', d => (d.source.y + d.target.y) / 2);
+
+        node
+            .attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+    // Drag functions
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    // Learning animation: On call, if confidence changed, restart sim with new weights
+    simulation.alpha(1).restart();
+
+    // Add "Teach Me" button for interaction
+    const teachBtn = container.append('button')
+        .attr('class', 'btn btn--outline btn--sm')
+        .style('margin-top', '8px')
+        .text('Teach a Correction')
+        .on('click', () => {
+            // Simulate user correction: Boost a random link
+            const randomLink = links[Math.floor(Math.random() * links.length)];
+            randomLink.confidence = Math.min(1, randomLink.confidence + 0.2);
+            updateLearnerConfidence(true, 'graphCorrection');
+            // Re-render links
+            link.transition().duration(500)
+                .attr('stroke-width', d => Math.max(1, d.confidence * 4))
+                .attr('stroke', d => d3.interpolateReds(d.confidence))
+                .attr('stroke-dasharray', d => d.confidence < 0.5 ? '5,5' : 'none');
+            linkLabel.text(d => `${Math.round(d.confidence * 100)}%`);
+        });
+
+    showNotification('Learning Graph Active: Drag nodes, teach corrections!', 'info');
+}
+
+// Example usage in updateLearnerConfidence (add this line at end):
+// visualizeLearningGraph(appState.dependencies, learnerState.corrections);
 // Initialize SQL.js database
 async function initSQLJS() {
     try {
